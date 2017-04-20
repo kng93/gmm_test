@@ -14,9 +14,6 @@ xr = [min(mu)-max(sigmas)-3, max(mu)+max(sigmas)+3]; % x range
 cts = cr(1) + (cr(2)-cr(1))*rand(1, k);
 sum_c = sum(cts);
 cts = cts / sum_c % normalize to sum up to 1
-% mu = [-5:0.1:5];
-% Y = 0.3*normpdf(mu, 0, 1) + 0.7*normpdf(mu, 2, 0.5);
-% plot(mu, Y);
 
 % Get the points
 num_points = 500; %500000;
@@ -32,3 +29,4 @@ end
 
 % Plot the graph
 scatter(pts(:,1), pts(:,2));
+csvwrite('gmm_points.dat', pts);
