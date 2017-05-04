@@ -24,7 +24,18 @@ end
 fclose(fileID);
 figure(20), hist(sampled_data,1000); title('Histogram of data sampled from the GMM');
 
-disp(means);
-disp(sigmas);
-
+% Print out the means/sigmas/weights for comparison
+resFile = fopen('orig_ms.txt','w');
+fprintf(resFile, 'MEANS\n');
+for i=1:n_gaussians
+    fprintf(resFile, '%f\n', means(i));
+end
+fprintf(resFile, '\nSIGMAS\n');
+for i=1:n_gaussians
+    fprintf(resFile, '%f\n', sigmas(1,1,i));
+end
+fprintf(resFile, '\nWEIGHTS\n');
+for i=1:n_gaussians
+    fprintf(resFile, '%f\n', weights(i));
+end
 
