@@ -1,6 +1,5 @@
 #include <opencv2/core.hpp>
 #include <opencv2/ml.hpp>
-//#include <opencv2/imgcodecs.hpp>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -9,7 +8,6 @@ using namespace cv;
 #define NUM_CLUS 5
 
 
-//#include <opencv2/highgui.hpp>
 int dataFromFile(std::string fn, Mat& samples)
 {
 	std::vector<float> val;
@@ -34,11 +32,48 @@ int dataFromFile(std::string fn, Mat& samples)
 	return 0;
 }
 
+int outputData(std::string fn, Mat means, Mat weights, std::vector<Mat> cov)
+{
+	std::fstream fs;
+	fs.open(fn, std::fstream::in | std::fstream::out | std::fstream::trunc);
+
+	// Mean
+	std::cout << "MEANS" << std::endl;
+	fs << "MEANS\n";
+	for (int i = 0; i < NUM_CLUS; i++)
+	{
+		std::cout << "\t" << means.at<double>(i) << std::endl;
+		fs << "\t" << means.at<double>(i) << std::endl;
+	}
+
+	// Sigma
+	std::cout << "\n\nSIGMAS " << std::endl;
+	fs << "\n\nSIGMAS\n";
+	for (int i = 0; i < NUM_CLUS; i++)
+	{
+		std::cout << "\t" << cov[i].at<double>(0) << std::endl;
+		fs << "\t" << cov[i].at<double>(0) << std::endl;
+	}
+
+	// Weights
+	std::cout << "\n\nWEIGHTS " << std::endl;
+	fs << "\n\nWEIGHTS\n";
+	for (int i = 0; i < NUM_CLUS; i++)
+	{
+		std::cout << "\t" << weights.at<double>(i) << std::endl;
+		fs << "\t" << weights.at<double>(i) << std::endl;
+	}
+
+	fs.close();
+	return 0;
+}
+
 
 int main(int argc, char** argv)
 {
 	// Get the data from a file
 	std::string dataFile("../../setup/gmm.txt"); // by default
+	std::string outFile("../../setup/est_ms.txt"); // by default
 	if (argc > 1)
 		dataFile = argv[1];
 
@@ -48,25 +83,26 @@ int main(int argc, char** argv)
 		return -1; // File didn't read properly
 
 	
-	//// Train expectation maximization
+	// Train expectation maximization
 	Ptr<ml::EM> mdl = ml::EM::create();
 	mdl->setClustersNumber(NUM_CLUS);
 	mdl->trainEM(samples);
 
-	// Get + print means
-	Mat means = mdl->getMeans();
-	std::cout << "Means: " << std::endl;
-	for (int i = 0; i < NUM_CLUS; i++)
-		std::cout << "\t" << means.at<double>(i) << std::endl;
 
-	// Get + print covariance matrix
+	// Get means
+	Mat means = mdl->getMeans();
+	// Get weights
+	Mat weights = mdl->getWeights();
+
+	// Get covariance matrix
 	std::vector<Mat> cov;
 	for (int i = 0; i < NUM_CLUS; i++)
 		cov.push_back(Mat::zeros(1, 1, CV_64FC1));
 	mdl->getCovs(cov);
-	std::cout << "\n\nSigmas: " << std::endl;
-	for (int i = 0; i < NUM_CLUS; i++)
-		std::cout << "\t" << cov[i].at<double>(0) << std::endl;
+	
+
+	// Print out the data (to stdout and to file)
+	outputData(outFile, means, weights, cov);
 
 	system("pause");
 }
