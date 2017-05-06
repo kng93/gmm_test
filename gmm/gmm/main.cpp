@@ -3,12 +3,12 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <armadillo>
 
-using namespace cv;
 #define NUM_CLUS 5
 
 
-int dataFromFile(std::string fn, Mat& samples)
+int dataFromFile(std::string fn, cv::Mat& samples)
 {
 	std::vector<float> val;
 	double raw;
@@ -25,14 +25,14 @@ int dataFromFile(std::string fn, Mat& samples)
 
 	// Put the data into the matrix
 	int num_points = val.size();
-	samples = Mat::zeros(num_points, 1, CV_64FC1);
+	samples = cv::Mat::zeros(num_points, 1, CV_64FC1);
 	for (int i = 0; i < num_points; i++)
 		samples.at<double>(i) = val[i];
 
 	return 0;
 }
 
-int outputData(std::string fn, Mat means, Mat weights, std::vector<Mat> cov)
+int outputData(std::string fn, cv::Mat means, cv::Mat weights, std::vector<cv::Mat> cov)
 {
 	std::fstream fs;
 	fs.open(fn, std::fstream::in | std::fstream::out | std::fstream::trunc);
@@ -69,6 +69,31 @@ int outputData(std::string fn, Mat means, Mat weights, std::vector<Mat> cov)
 }
 
 
+
+int armaDataFromFile(std::string fn, arma::mat& samples)
+{
+	std::vector<float> val;
+	double raw;
+
+	// Get the data from the file
+	std::ifstream dFile(fn);
+	if (!dFile.is_open())
+		return -1;
+
+	while (dFile >> raw)
+		val.push_back(raw);
+
+	dFile.close();
+
+	// Put the data into the matrix
+	int num_points = val.size();
+	samples = arma::mat(1, num_points, arma::fill::zeros);
+	for (int i = 0; i < num_points; i++)
+		samples(i) = val[i];
+
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	// Get the data from a file
@@ -77,32 +102,46 @@ int main(int argc, char** argv)
 	if (argc > 1)
 		dataFile = argv[1];
 
-	// Get data
-	Mat samples;
-	if (dataFromFile(dataFile, samples) < 0)
+	//// Get data
+	//cv::Mat samples;
+	//if (dataFromFile(dataFile, samples) < 0)
+	//	return -1; // File didn't read properly
+
+	//
+	//// Train expectation maximization
+	//cv::Ptr<cv::ml::EM> mdl = cv::ml::EM::create();
+	//mdl->setClustersNumber(NUM_CLUS);
+	//mdl->trainEM(samples);
+
+
+	//// Get means
+	//cv::Mat means = mdl->getMeans();
+	//// Get weights
+	//cv::Mat weights = mdl->getWeights();
+
+	//// Get covariance matrix
+	//std::vector<cv::Mat> cov;
+	//for (int i = 0; i < NUM_CLUS; i++)
+	//	cov.push_back(cv::Mat::zeros(1, 1, CV_64FC1));
+	//mdl->getCovs(cov);
+	//
+
+	//// Print out the data (to stdout and to file)
+	//outputData(outFile, means, weights, cov);
+
+
+
+	// Armadillo
+	arma::gmm_diag model;
+	arma::mat armaSamples;
+	if (armaDataFromFile(dataFile, armaSamples) < 0)
 		return -1; // File didn't read properly
 
-	
-	// Train expectation maximization
-	Ptr<ml::EM> mdl = ml::EM::create();
-	mdl->setClustersNumber(NUM_CLUS);
-	mdl->trainEM(samples);
+	bool status = model.learn(armaSamples, NUM_CLUS, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, true);
+	if (status == false)
+		std::cout << "learning failed" << std::endl;
 
-
-	// Get means
-	Mat means = mdl->getMeans();
-	// Get weights
-	Mat weights = mdl->getWeights();
-
-	// Get covariance matrix
-	std::vector<Mat> cov;
-	for (int i = 0; i < NUM_CLUS; i++)
-		cov.push_back(Mat::zeros(1, 1, CV_64FC1));
-	mdl->getCovs(cov);
-	
-
-	// Print out the data (to stdout and to file)
-	outputData(outFile, means, weights, cov);
+	model.means.print("means:");
 
 	system("pause");
 }
