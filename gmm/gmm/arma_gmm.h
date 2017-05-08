@@ -31,8 +31,11 @@ int armaDataFromFile(std::string fn, arma::mat& samples)
 	return 0;
 }
 
-int armaOutputData(std::string fn, arma::mat means, arma::mat weights, std::vector<cv::Mat> cov)
+//TODO: MAKE SURE THIS WORKS
+//int armaOutputData(std::string fn, arma::Base<double, arma::mat> means, arma::mat weights, arma::Base<double, arma::mat> cov)
+int armaOutputData(std::string fn, arma::mat means, arma::mat weights, arma::mat cov)
 {
+	
 	std::fstream fs;
 	fs.open(fn, std::fstream::in | std::fstream::out | std::fstream::trunc);
 
@@ -50,8 +53,8 @@ int armaOutputData(std::string fn, arma::mat means, arma::mat weights, std::vect
 	fs << "\n\nSIGMAS\n";
 	for (int i = 0; i < NUM_CLUS; i++)
 	{
-		std::cout << "\t" << cov[i].at<double>(0) << std::endl;
-		fs << "\t" << cov[i].at<double>(0) << std::endl;
+		std::cout << "\t" << cov(i) << std::endl;
+		fs << "\t" << cov(i) << std::endl;
 	}
 
 	// Weights
@@ -78,7 +81,7 @@ int armaRun(std::string dataFile, std::string outFile)
 	if (status == false)
 		std::cout << "learning failed" << std::endl;
 
-	model.means.print("means:");
+	armaOutputData(outFile, model.means, model.hefts, model.dcovs);
 
 	return 0;
 }

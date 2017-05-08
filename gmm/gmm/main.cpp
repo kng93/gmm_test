@@ -8,19 +8,23 @@ int main(int argc, char** argv)
 {
 	// Get the data from a file
 	std::string dataFile("../../setup/gmm.txt"); // by default
-	std::string outFile("../../setup/est_ms.txt"); // by default
-	if (argc > 2)
+	std::string cvOutFile("../../setup/cv_est_ms.txt"); // by default
+	std::string armaOutFile("../../setup/arma_est_ms.txt"); // by default
+	if (argc > 3)
 	{
 		dataFile = argv[1];
-		outFile = argv[2];
+		cvOutFile = argv[2];
+		armaOutFile = argv[2];
 	}
 
-	if (cvRun(dataFile, outFile) < 0)
+	std::cout << "===========================================" << std::endl;
+	if (cvRun(dataFile, cvOutFile) < 0)
 		std::cout << "Error with OpenCV Code" << std::endl << std::endl;
 
-
+	std::cout << std::endl << std::endl;
+	std::cout <<"===========================================" << std::endl;
 	// Armadillo
-	if (armaRun(dataFile, outFile) < 0)
+	if (armaRun(dataFile, armaOutFile) < 0)
 		std::cout << "Error with Arma Code" << std::endl << std::endl;
 
 	system("pause");
