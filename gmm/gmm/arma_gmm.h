@@ -5,7 +5,7 @@
 #include <fstream>
 #include <armadillo>
 
-#define NUM_CLUS 5
+#define NUM_CLUS 4
 
 int armaDataFromFile(std::string fn, arma::mat& samples)
 {

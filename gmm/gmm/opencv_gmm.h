@@ -6,7 +6,7 @@
 #include <string>
 #include <fstream>
 
-#define NUM_CLUS 5
+#define NUM_CLUS 4
 
 int cvDataFromFile(std::string fn, cv::Mat& samples)
 {
